@@ -14,7 +14,7 @@ df = df.dropna()
 df['Loan_Status'] = df['Loan_Status'].map({'Y': 1, 'N': 0})
 df = df.drop(['Loan_ID'], axis=1)
 X = pd.get_dummies(df.drop('Loan_Status', axis=1))
-X = X.astype(float)  # Ensures compatibility with ExplainerDashboard
+X = X.astype(float)  
 y = df['Loan_Status']
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
