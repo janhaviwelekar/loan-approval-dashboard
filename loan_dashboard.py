@@ -36,4 +36,4 @@ ExplainerDashboard(
     title="Loan Approval Dashboard",
     whatif=True,
     shap_interaction=True
-).run()
+).run("port=8050, host="0.0.0.0")
