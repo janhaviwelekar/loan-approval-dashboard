@@ -17,5 +17,6 @@ X = df[['Gender', 'Married', 'Education', 'ApplicantIncome', 'LoanAmount']]
 y = df['Loan_Status'].map({'Y': 1, 'N': 0})
 
 explainer = ClassifierExplainer(model, X, y, labels=["Not Approved", "Approved"])
+import os
+ExplainerDashboard(explainer,shap_interaction=False,).run(port=int(os.environ.get("PORT", 8050)), host="0.0.0.0")
 
-ExplainerDashboard(explainer).run(port=8050)
