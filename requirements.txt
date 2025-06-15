@@ -1,6 +1,5 @@
-streamlit
-scikit-learn
 pandas
+scikit-learn
+streamlit
 joblib
 explainerdashboard
-shap
