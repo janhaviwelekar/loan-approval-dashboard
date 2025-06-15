@@ -1,10 +1,12 @@
+# loan_dashboard.py
+
 import streamlit as st
 import pandas as pd
 import joblib
 
-# Load model and column names
+# Load model and expected input columns
 model = joblib.load("loan_model.pkl")
-model_columns = joblib.load("model_columns.pkl")  # This should match training columns
+model_columns = joblib.load("model_columns.pkl")
 
 st.title("🏦 Loan Approval Predictor")
 
@@ -21,7 +23,7 @@ loan_term = st.number_input("Loan Amount Term (in days)", min_value=0)
 credit_history = st.selectbox("Credit History", [1.0, 0.0])
 property_area = st.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
 
-# Construct DataFrame
+# Create input DataFrame
 input_df = pd.DataFrame([{
     'Gender': gender,
     'Married': married,
@@ -36,30 +38,18 @@ input_df = pd.DataFrame([{
     'Property_Area': property_area
 }])
 
-# One-hot encode inputs to match training
+# One-hot encode input and align with training columns
 input_encoded = pd.get_dummies(input_df)
-
-# Align to training columns
 input_encoded = input_encoded.reindex(columns=model_columns, fill_value=0)
 
-# Predict
+# Prediction
 if st.button("Predict"):
     try:
         prediction = model.predict(input_encoded)[0]
         proba = model.predict_proba(input_encoded)[0][prediction]
-
         label = 'Approved' if prediction == 1 else 'Not Approved'
         st.success(f"Prediction: {label}")
         st.info(f"Confidence: {proba:.2f}")
-
         st.markdown("[🔎 View SHAP Explainability Dashboard](https://your-explainer-url.onrender.com)", unsafe_allow_html=True)
     except Exception as e:
         st.error(f"Prediction failed: {e}")
-
-
-
-
-
-
-
-
