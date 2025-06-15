@@ -1,5 +1,9 @@
+streamlit
 pandas
 scikit-learn
-streamlit
 joblib
+shap
 explainerdashboard
+matplotlib
+numpy
+
