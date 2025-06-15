@@ -1,58 +1,65 @@
-# loan_dashboard.py
-
+import streamlit as st
 import pandas as pd
-import numpy as np
+import joblib
 
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix
+# Load model and column names
+model = joblib.load("loan_model.pkl")
+model_columns = joblib.load("model_columns.pkl")  # This should match training columns
 
-from explainerdashboard import ClassifierExplainer, ExplainerDashboard
+st.title("🏦 Loan Approval Predictor")
+
+# User Inputs
+gender = st.selectbox("Gender", ["Male", "Female"])
+married = st.selectbox("Married", ["Yes", "No"])
+dependents = st.selectbox("Dependents", ["0", "1", "2", "3+"])
+education = st.selectbox("Education", ["Graduate", "Not Graduate"])
+self_employed = st.selectbox("Self Employed", ["Yes", "No"])
+applicant_income = st.number_input("Applicant Income", min_value=0)
+coapplicant_income = st.number_input("Coapplicant Income", min_value=0)
+loan_amount = st.number_input("Loan Amount (in thousands)", min_value=0)
+loan_term = st.number_input("Loan Amount Term (in days)", min_value=0)
+credit_history = st.selectbox("Credit History", [1.0, 0.0])
+property_area = st.selectbox("Property Area", ["Urban", "Semiurban", "Rural"])
+
+# Construct DataFrame
+input_df = pd.DataFrame([{
+    'Gender': gender,
+    'Married': married,
+    'Dependents': dependents,
+    'Education': education,
+    'Self_Employed': self_employed,
+    'ApplicantIncome': applicant_income,
+    'CoapplicantIncome': coapplicant_income,
+    'LoanAmount': loan_amount,
+    'Loan_Amount_Term': loan_term,
+    'Credit_History': credit_history,
+    'Property_Area': property_area
+}])
+
+# One-hot encode inputs to match training
+input_encoded = pd.get_dummies(input_df)
+
+# Align to training columns
+input_encoded = input_encoded.reindex(columns=model_columns, fill_value=0)
+
+# Predict
+if st.button("Predict"):
+    try:
+        prediction = model.predict(input_encoded)[0]
+        proba = model.predict_proba(input_encoded)[0][prediction]
+
+        label = 'Approved' if prediction == 1 else 'Not Approved'
+        st.success(f"Prediction: {label}")
+        st.info(f"Confidence: {proba:.2f}")
+
+        st.markdown("[🔎 View SHAP Explainability Dashboard](https://your-explainer-url.onrender.com)", unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")
 
 
 
-df = pd.read_csv("train.csv")
-
-# Drop rows with missing values for simplicity (or impute if needed)
-df = df.dropna()
-
-# Encode target variable
-df['Loan_Status'] = df['Loan_Status'].map({'Y': 1, 'N': 0})
-
-# Drop Loan_ID (not useful)
-df = df.drop(['Loan_ID'], axis=1)
-
-# One-hot encode categorical variables
-X = pd.get_dummies(df.drop('Loan_Status', axis=1))
-X = X.astype(float)  # Ensures compatibility with ExplainerDashboard
-y = df['Loan_Status']
 
 
-# -------------------------------
-# STEP 2: Train/Test Split
-# -------------------------------
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# -------------------------------
-# STEP 3: Train a Model
-# -------------------------------
-model = RandomForestClassifier(n_estimators=100, random_state=42)
-model.fit(X_train, y_train)
 
-# Evaluate (Optional)
-y_pred = model.predict(X_test)
-print("Classification Report:\n", classification_report(y_test, y_pred))
-print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
 
-# -------------------------------
-# STEP 4: Launch Explainer Dashboard
-# -------------------------------
-explainer = ClassifierExplainer(model, X_test, y_test,
-                                 labels=["Not Approved", "Approved"])
-
-ExplainerDashboard(
-    explainer,
-    title="Loan Approval Dashboard",
-    whatif=True,
-    shap_interaction=True
-).run(port=10000, host="0.0.0.0")
