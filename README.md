@@ -16,13 +16,5 @@ This project uses Python, scikit-learn, SHAP, and ExplainerDashboard for model i
 
 ---
 
-## 📁 Folder Structure
 
-loan-approval-dashboard/
-│
-├── train.csv # Dataset (not uploaded to GitHub)
-├── loan_dashboard.py # Main Python script
-├── requirements.txt # Python dependencies
-├── README.md # Project documentation
-└── .gitignore # Files ignored by Git
 
